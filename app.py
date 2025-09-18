@@ -2,7 +2,7 @@ import streamlit as st
 import joblib
 import numpy as np
 import pandas as pd
-import os
+from pathlib import Path
 from datetime import datetime
 import random
 
@@ -10,12 +10,16 @@ import random
 st.set_page_config(page_title="📊 Loan Risk Predictor", layout="centered")
 
 # 📦 Load model and scaler
-base_dir = os.path.dirname(__file__)
-model_path = os.path.join(base_dir, "..", "database", "model", "loan_default_model.pkl")
-scaler_path = os.path.join(base_dir, "..", "database", "model", "scaler.pkl")
+base_dir = Path(__file__).resolve().parent
+model_path = base_dir / "database" / "model" / "loan_default_model.pkl"
+scaler_path = base_dir / "database" / "model" / "scaler.pkl"
 
-model = joblib.load(model_path)
-scaler = joblib.load(scaler_path)
+try:
+    model = joblib.load(model_path)
+    scaler = joblib.load(scaler_path)
+except FileNotFoundError:
+    st.error("❌ Model or scaler file not found. Please check your file paths.")
+    st.stop()
 
 # 🔐 User credentials
 users = {
@@ -87,15 +91,13 @@ if st.button("🚀 Predict Loan Risk"):
     proof_map = {'Yes': 1, 'No': 0}
     delinq_map = {'Yes': 1, 'No': 0}
 
-    input_data = np.array([[
-        age,
-        edu_map[education],
-        proof_map[proof_submitted],
-        loan_amount,
-        asset_cost,
-        no_of_loans,
-        delinq_map[last_delinq_none]
-    ]])
+    input_data = np.array([[age,
+                            edu_map[education],
+                            proof_map[proof_submitted],
+                            loan_amount,
+                            asset_cost,
+                            no_of_loans,
+                            delinq_map[last_delinq_none]]])
 
     input_scaled = scaler.transform(input_data)
     prediction = model.predict(input_scaled)[0]
@@ -137,14 +139,16 @@ if st.button("🚀 Predict Loan Risk"):
     }
 
     log_df = pd.DataFrame([log_entry])
-    log_df.to_csv("user_logs.csv", mode="a", header=not os.path.exists("user_logs.csv"), index=False)
+    log_path = base_dir / "user_logs.csv"
+    log_df.to_csv(log_path, mode="a", header=not log_path.exists(), index=False)
 
 # 📁 Admin view
 if st.session_state.username == "admin":
     st.markdown("---")
     st.markdown("### 📁 User Activity Logs")
-    if os.path.exists("user_logs.csv"):
-        logs = pd.read_csv("user_logs.csv")
+    log_path = base_dir / "user_logs.csv"
+    if log_path.exists():
+        logs = pd.read_csv(log_path)
         st.dataframe(logs)
     else:
         st.info("No logs available yet.")
