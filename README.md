@@ -37,15 +37,10 @@ pip install -r requirements.txt
 streamlit run app.py
 
 
-
-🌐 Deployment
-This app is ready for deployment on Streamlit Cloud.
-Just point to app.py in your GitHub repo and go live.
-
 👤 Author
 Sanskar Bhosle
 B.Tech Integrated in Data Science
 Mukesh Patel School of Technology Management & Engineering
 Mumbai, India
 
-Let me know if you want a version with screenshots, badges, or a launch announcement. You're ready to showcase this like a pro.
+Let me know if you want a version with screenshots, badges, or a launch announcement.
